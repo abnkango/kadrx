@@ -65,7 +65,7 @@
       const isSearchMap = link.getAttribute('aria-label') === 'خريطة البحث'
         || label.includes('خريطة البحث')
         || link.getAttribute('href')?.startsWith('/search-map');
-      if (isSearchMap) link.style.display = isHome ? '' : 'none';
+      if (isSearchMap) link.style.setProperty('display', isHome ? '' : 'none', 'important');
     });
   }
 
