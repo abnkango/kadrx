@@ -102,6 +102,7 @@
       #kadrx-free-dialog p{margin:0;color:#e6ebf1;font-size:17px;line-height:1.8}
       #kadrx-free-close{position:absolute;top:10px;left:12px;width:30px;height:30px;border:0;border-radius:50%;background:transparent;color:#c8d0da;font-size:24px;line-height:1;cursor:pointer}
       #kadrx-free-close:hover{background:rgba(255,255,255,.1);color:#fff}
+      .kadrx-save-success{background:#20c86b!important;border-color:#20c86b!important;color:#fff!important;box-shadow:0 8px 20px rgba(32,200,107,.25)!important}
       @media (max-width:600px){#kadrx-free-badge{top:112px;right:14px;min-width:76px;height:34px;padding:0 14px;border-radius:10px;font-size:19px}#kadrx-free-dialog{padding:26px 20px 22px}}
     `;
     document.head.appendChild(style);
@@ -124,10 +125,25 @@
     document.addEventListener('keydown', (event) => { if (event.key === 'Escape') close(); });
   }
 
+  function setupSaveFeedback() {
+    const successWords = ['تم الحفظ', 'تم الحفظ بنجاح', 'saved successfully', 'profile saved', 'successfully saved'];
+    const markSuccessfulButtons = () => {
+      document.querySelectorAll('button, [role="button"]').forEach((button) => {
+        if (!isVisible(button)) return;
+        const text = labelOf(button).toLowerCase();
+        if (successWords.some((word) => text.includes(word.toLowerCase()))) button.classList.add('kadrx-save-success');
+      });
+    };
+    const observer = new MutationObserver(markSuccessfulButtons);
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class'] });
+    markSuccessfulButtons();
+  }
+
   function init() {
     addFreeOffer();
     setupDraftPersistence();
     setupStepHistory();
+    setupSaveFeedback();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
