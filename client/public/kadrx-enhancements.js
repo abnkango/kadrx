@@ -136,7 +136,7 @@
     if (location.pathname !== '/') return;
     const style = document.createElement('style');
     style.textContent = `
-      #kadrx-free-badge{position:fixed;z-index:1000;top:70px;right:20px;display:inline-flex;align-items:center;justify-content:center;min-width:86px;height:40px;padding:0 18px;border:1px solid rgba(255,255,255,.35);border-radius:12px;background:#119b50;color:#fff;font:800 22px/1 Arial,sans-serif;letter-spacing:.2px;box-shadow:0 8px 22px rgba(0,0,0,.22);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
+      #kadrx-free-badge{position:fixed;z-index:1000;top:62px;right:20px;display:inline-flex;align-items:center;justify-content:center;min-width:86px;height:40px;padding:0 18px;border:1px solid rgba(255,255,255,.4);border-radius:12px;background:#087a3c;color:#fff;font:800 22px/1 Arial,sans-serif;letter-spacing:.2px;box-shadow:0 8px 22px rgba(0,0,0,.28);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
       #kadrx-free-badge:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.3)}
       #kadrx-free-backdrop{position:fixed;inset:0;z-index:1100;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(5,10,18,.55);backdrop-filter:blur(5px)}
       #kadrx-free-backdrop.is-open{display:flex}
@@ -146,7 +146,7 @@
       #kadrx-free-close{position:absolute;top:10px;left:12px;width:30px;height:30px;border:0;border-radius:50%;background:transparent;color:#c8d0da;font-size:24px;line-height:1;cursor:pointer}
       #kadrx-free-close:hover{background:rgba(255,255,255,.1);color:#fff}
       .kadrx-save-success{background:#20c86b!important;border-color:#20c86b!important;color:#fff!important;box-shadow:0 8px 20px rgba(32,200,107,.25)!important}
-      @media (max-width:600px){#kadrx-free-badge{top:104px;right:14px;min-width:76px;height:34px;padding:0 14px;border-radius:10px;font-size:19px}#kadrx-free-dialog{padding:26px 20px 22px}}
+      @media (max-width:600px){#kadrx-free-badge{top:96px;right:14px;min-width:76px;height:34px;padding:0 14px;border-radius:10px;font-size:19px}#kadrx-free-dialog{padding:26px 20px 22px}}
     `;
     document.head.appendChild(style);
 
