@@ -58,6 +58,17 @@
     return ['/worker', '/company', '/kadr'].includes(location.pathname);
   }
 
+  function syncHomeOnlyMapButton() {
+    const isHome = location.pathname === '/';
+    document.querySelectorAll('a').forEach((link) => {
+      const label = labelOf(link);
+      const isSearchMap = link.getAttribute('aria-label') === 'خريطة البحث'
+        || label.includes('خريطة البحث')
+        || link.getAttribute('href')?.startsWith('/search-map');
+      if (isSearchMap) link.style.display = isHome ? '' : 'none';
+    });
+  }
+
   function ensureFormBackGuard() {
     if (!isFormRoute()) return;
     if (!history.state || !history.state.kadrxFormGuard) {
@@ -108,8 +119,10 @@
     const routeObserver = new MutationObserver(() => {
       if (isFormRoute()) ensureFormBackGuard();
       addFreeOffer();
+      syncHomeOnlyMapButton();
     });
     routeObserver.observe(document.body, { childList: true, subtree: true });
+    syncHomeOnlyMapButton();
   }
 
   function addFreeOffer() {
@@ -171,6 +184,7 @@
 
   function init() {
     addFreeOffer();
+    syncHomeOnlyMapButton();
     setupDraftPersistence();
     setupStepHistory();
     setupSaveFeedback();
