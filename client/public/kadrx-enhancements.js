@@ -54,11 +54,26 @@
     return Number(sessionStorage.getItem(STEP_KEY) || '0');
   }
 
-  function setupStepHistory() {
-    if (!history.state || !history.state.kadrxRoot) {
-      history.replaceState({ ...(history.state || {}), kadrxRoot: true, kadrxStep: 0 }, '', location.href);
-    }
+  function isFormRoute() {
+    return ['/worker', '/company', '/kadr'].includes(location.pathname);
+  }
 
+  function ensureFormBackGuard() {
+    if (!isFormRoute()) return;
+    if (!history.state || !history.state.kadrxFormGuard) {
+      history.pushState({ ...(history.state || {}), kadrxFormGuard: true, kadrxStep: stepCount() }, '', location.href);
+    }
+  }
+
+  function clickInternalPrevious() {
+    const back = [...document.querySelectorAll('button, [role="button"], a')]
+      .find((el) => isVisible(el) && isLabel(el, backLabels));
+    if (back instanceof HTMLElement) back.click();
+    restoreDraft();
+  }
+
+  function setupStepHistory() {
+    ensureFormBackGuard();
     document.addEventListener('click', (event) => {
       const target = event.target instanceof Element ? event.target.closest('button, [role="button"], a') : null;
       if (!target || !isVisible(target)) return;
@@ -66,34 +81,49 @@
         saveDraft();
         const nextStep = stepCount() + 1;
         sessionStorage.setItem(STEP_KEY, String(nextStep));
-        setTimeout(() => history.pushState({ kadrxFormStep: nextStep }, '', location.href), 0);
+        setTimeout(() => {
+          if (isFormRoute()) history.pushState({ ...(history.state || {}), kadrxFormGuard: true, kadrxStep: nextStep }, '', location.href);
+        }, 40);
       } else if (isLabel(target, backLabels)) {
         saveDraft();
-        const previous = Math.max(0, stepCount() - 1);
-        sessionStorage.setItem(STEP_KEY, String(previous));
+        sessionStorage.setItem(STEP_KEY, String(Math.max(0, stepCount() - 1)));
+      } else if (target instanceof HTMLAnchorElement && ['/worker', '/company', '/kadr'].some((path) => target.pathname === path)) {
+        saveDraft();
+        sessionStorage.setItem(STEP_KEY, '0');
+        setTimeout(ensureFormBackGuard, 80);
       }
     }, true);
 
     window.addEventListener('popstate', () => {
-      const current = stepCount();
-      if (current > 0) {
-        sessionStorage.setItem(STEP_KEY, String(current - 1));
-        setTimeout(() => {
-          const back = [...document.querySelectorAll('button, [role="button"], a')].find((el) => isVisible(el) && isLabel(el, backLabels));
-          if (back instanceof HTMLElement) back.click();
-          restoreDraft();
-        }, 30);
+      if (isFormRoute()) {
+        // The phone back gesture consumed the guard entry; stay in the form and move one step back.
+        history.pushState({ ...(history.state || {}), kadrxFormGuard: true, kadrxStep: Math.max(0, stepCount() - 1) }, '', location.href);
+        sessionStorage.setItem(STEP_KEY, String(Math.max(0, stepCount() - 1)));
+        setTimeout(clickInternalPrevious, 40);
       } else {
         restoreDraft();
       }
     });
+
+    const routeObserver = new MutationObserver(() => {
+      if (isFormRoute()) ensureFormBackGuard();
+      addFreeOffer();
+    });
+    routeObserver.observe(document.body, { childList: true, subtree: true });
   }
 
   function addFreeOffer() {
-    if (document.getElementById('kadrx-free-badge')) return;
+    const existing = document.getElementById('kadrx-free-badge');
+    if (existing) {
+      existing.style.display = location.pathname === '/' ? 'inline-flex' : 'none';
+      const backdrop = document.getElementById('kadrx-free-backdrop');
+      if (backdrop && location.pathname !== '/') backdrop.classList.remove('is-open');
+      return;
+    }
+    if (location.pathname !== '/') return;
     const style = document.createElement('style');
     style.textContent = `
-      #kadrx-free-badge{position:fixed;z-index:1000;top:78px;right:20px;display:inline-flex;align-items:center;justify-content:center;min-width:86px;height:40px;padding:0 18px;border:1px solid rgba(255,255,255,.35);border-radius:12px;background:#20c86b;color:#fff;font:800 22px/1 Arial,sans-serif;letter-spacing:.2px;box-shadow:0 8px 22px rgba(0,0,0,.22);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
+      #kadrx-free-badge{position:fixed;z-index:1000;top:70px;right:20px;display:inline-flex;align-items:center;justify-content:center;min-width:86px;height:40px;padding:0 18px;border:1px solid rgba(255,255,255,.35);border-radius:12px;background:#119b50;color:#fff;font:800 22px/1 Arial,sans-serif;letter-spacing:.2px;box-shadow:0 8px 22px rgba(0,0,0,.22);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
       #kadrx-free-badge:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.3)}
       #kadrx-free-backdrop{position:fixed;inset:0;z-index:1100;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(5,10,18,.55);backdrop-filter:blur(5px)}
       #kadrx-free-backdrop.is-open{display:flex}
@@ -103,7 +133,7 @@
       #kadrx-free-close{position:absolute;top:10px;left:12px;width:30px;height:30px;border:0;border-radius:50%;background:transparent;color:#c8d0da;font-size:24px;line-height:1;cursor:pointer}
       #kadrx-free-close:hover{background:rgba(255,255,255,.1);color:#fff}
       .kadrx-save-success{background:#20c86b!important;border-color:#20c86b!important;color:#fff!important;box-shadow:0 8px 20px rgba(32,200,107,.25)!important}
-      @media (max-width:600px){#kadrx-free-badge{top:112px;right:14px;min-width:76px;height:34px;padding:0 14px;border-radius:10px;font-size:19px}#kadrx-free-dialog{padding:26px 20px 22px}}
+      @media (max-width:600px){#kadrx-free-badge{top:104px;right:14px;min-width:76px;height:34px;padding:0 14px;border-radius:10px;font-size:19px}#kadrx-free-dialog{padding:26px 20px 22px}}
     `;
     document.head.appendChild(style);
 
